@@ -306,7 +306,10 @@ function findExportMetadata(importPath: string): ExportMetadata | undefined {
   }
 }
 
-export async function startAll(options: Options, showUI: boolean = true): Promise<void> {
+/**
+ *
+ */
+export async function startAll(options: Options, showUI = true): Promise<void> {
   // Emulators config is specified in firebase.json as:
   // "emulators": {
   //   "firestore": {
@@ -664,11 +667,19 @@ export async function startAll(options: Options, showUI: boolean = true): Promis
 
   if (shouldStart(options, Emulators.REMOTE_CONFIG)) {
     const rcAddr = await getAndCheckAddress(Emulators.REMOTE_CONFIG, options);
+    const rcConfig = options.config.data.remoteconfig;
+
+    if (!rcConfig?.template) {
+      throw new FirebaseError(
+        "Cannot start the Remote Config emulator without a template file specified in firebase.json: run 'firebase init' and set up your Remote Config configuration"
+      );
+    }
 
     const rcEmulator = new RemoteConfigEmulator({
       host: rcAddr.host,
       port: rcAddr.port,
       projectId: projectId,
+      template: options.config.path(rcConfig.template),
     });
     await startEmulator(rcEmulator);
   }
